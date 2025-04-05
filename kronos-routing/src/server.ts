@@ -8,6 +8,7 @@ import http from "http";
 import { WebSocketServer, WebSocket } from "ws";
 import fs from "fs";
 import path from "path";
+import bodyParser from "body-parser";
 
 // Initialize crypto for Node.js environment
 const crypto = new Crypto();
@@ -57,7 +58,10 @@ const app: Express = express();
 app.use(express.json());
 dotenv.config();
 
+app.use(bodyParser.json());
+
 const server = http.createServer(app);
+const messagesPath = path.resolve(__dirname, "messages.json");
 
 // Create WebSocket server
 const wss = new WebSocketServer({ server });
@@ -114,6 +118,44 @@ app.get("/public-key", (_req: Request, res: Response<IPublicKeyResponse>) => {
     nodeId: node.id,
     key: node.key.toString("base64"),
   });
+});
+
+app.post("/posts", (req: any, res: any) => {
+  const { content, author, isAnonymous = false } = req.body;
+
+  if (!content) {
+    return res.status(400).json({ error: "Content is required." });
+  }
+
+  const newMessage = {
+    id: Date.now(),
+    content,
+    author: isAnonymous ? null : author,
+    isAnonymous,
+    timestamp: new Date().toISOString(),
+    votes: 0,
+    comments: [],
+    userVote: null,
+  };
+
+  try {
+    let messages: string[] = [];
+
+    if (fs.existsSync(messagesPath)) {
+      const data = fs.readFileSync(messagesPath, "utf-8");
+      messages = JSON.parse(data);
+    }
+
+    messages.push(JSON.stringify(newMessage));
+    fs.writeFileSync(messagesPath, JSON.stringify(messages, null, 2), "utf-8");
+
+    res
+      .status(201)
+      .json({ message: "Post created successfully.", post: newMessage });
+  } catch (err) {
+    console.error("Failed to create post:", err);
+    res.status(500).json({ error: "Could not create post." });
+  }
 });
 
 // Fix the forward endpoint type definition

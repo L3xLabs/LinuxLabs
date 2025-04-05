@@ -1,0 +1,26 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Post {
+  id          String   @id
+  content     String
+  isAnonymous Boolean
+  timestamp   DateTime
+  votes       Int
+  userVote    String?
+  authorId    String?   // Nullable for anonymous posts
+  author      Author?   @relation(fields: [authorId], references: [id], onDelete: SetNull)
+}
+
+model Author {
+  id      String  @id
+  name    String
+  avatar  String
+  posts   Post[]
+}

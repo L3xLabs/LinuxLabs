@@ -87,10 +87,8 @@ export function broadcastMessage(message: string) {
   });
 }
 app.use(
-  cors({
-    origin: ["http://localhost:5173", "http://localhost:5174"],
-  })
-);
+  cors())
+;
 // Initialize node
 const NODE_ID = process.env.NODE_ID || "node1";
 const node = new Node(NODE_ID);

@@ -1,7 +1,6 @@
-// components/Feed.tsx
 "use client";
-import React, { useState } from 'react';
-import Image from 'next/image';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { Search, Settings, ChevronDown, MessageSquare, ThumbsUp, PlusCircle, FileText, Eye, Image as ImageIcon, Paperclip } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -16,32 +15,31 @@ import { cn } from '@/lib/utils';
 
 interface Comment {
   id: number;
+  content: string;
   author: {
+    id: string;
     name: string;
     avatar: string;
-    initials: string;
-  };
-  content: string;
-  date: string;
-  likes: number;
-  comments: number;
-  isLiked: boolean;
+  } | null;
+  timestamp: string;
+  votes: number;
+  userVote: string | null;
+  isAnonymous: boolean;
 }
 
 interface Post {
   id: number;
+  content: string;
   author: {
+    id: string;
     name: string;
     avatar: string;
-    initials: string;
-  };
-  title?: string;
-  content: string;
-  date: string;
-  likes: number;
-  comments: number;
-  commentsList: Comment[];
-  isLiked: boolean;
+  } | null;
+  isAnonymous: boolean;
+  timestamp: string;
+  votes: number;
+  comments: Comment[];
+  userVote: string | null;
 }
 
 export default function Feed() {
@@ -53,75 +51,49 @@ export default function Feed() {
   const [commentPermission, setCommentPermission] = useState('Everyone');
   const [mediaDialogOpen, setMediaDialogOpen] = useState(false);
   const [pollDialogOpen, setPollDialogOpen] = useState(false);
-  
-  // State for posts
-  const [posts, setPosts] = useState<Post[]>([
-    {
-      id: 1,
-      author: {
-        name: 'Albert Flores',
-        avatar: '/avatars/albert.jpg',
-        initials: 'AF',
-      },
-      title: 'TF-IDF Content Optimisation: Your Guide to an Underappreciated SEO Concept',
-      content: 'In mauris porttitor tincidunt mauris massa sit lorem sed scelerisque. Fringilla pharetra vel massa enim sollicitudin cras. At pulvinar eget sociis adipiscing eget donec ultricies nibh tristique. Adipiscing dui orci ac purus lacus, nulla auctor. Ultrices sit leo diam etiam cras cras fermentum.',
-      date: 'Aug 19, 2021',
-      likes: 5,
-      comments: 3,
-      isLiked: false,
-      commentsList: [
-        {
-          id: 1,
-          author: {
-            name: 'Ralph Edwards',
-            avatar: '/avatars/ralph.jpg',
-            initials: 'RE',
-          },
-          content: 'In mauris porttitor tincidunt mauris massa sit lorem sed scelerisque. Fringilla pharetra vel massa enim sollicitudin cras. At pulvinar eget sociis adipiscing eget donec ultricies nibh tristique.',
-          date: 'Aug 19, 2021',
-          likes: 5,
-          comments: 3,
-          isLiked: false,
-        },
-        {
-          id: 2,
-          author: {
-            name: 'Ralph Edwards',
-            avatar: '/avatars/ralph.jpg',
-            initials: 'RE',
-          },
-          content: 'In mauris porttitor tincidunt mauris massa sit lorem sed scelerisque. Fringilla pharetra vel massa enim sollicitudin cras. At pulvinar eget sociis adipiscing eget donec ultricies nibh tristique.',
-          date: 'Aug 19, 2021',
-          likes: 0,
-          comments: 0,
-          isLiked: false,
-        },
-        {
-          id: 3,
-          author: {
-            name: 'Ralph Edwards',
-            avatar: '/avatars/ralph.jpg',
-            initials: 'RE',
-          },
-          content: 'In mauris porttitor tincidunt mauris massa sit lorem sed scelerisque. Fringilla pharetra vel massa enim sollicitudin cras. At pulvinar eget sociis adipiscing eget donec ultricies nibh tristique.',
-          date: 'Aug 19, 2021',
-          likes: 0,
-          comments: 0,
-          isLiked: false,
-        }
-      ]
-    }
-  ]);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch posts from the API
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axios.get('http://localhost:3003/posts'); 
+
+        setPosts(response.data.messages || []);
+
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPosts();
+  }, []);
+
+  // Function to format timestamp
+  const formatDate = (timestamp: string) => {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+  };
 
   // Function to handle liking a post
   const handleLikePost = (postId: number) => {
     setPosts(prevPosts => 
       prevPosts.map(post => {
         if (post.id === postId) {
+          const newVote = post.userVote === 'up' ? null : 'up';
+          const votesChange = post.userVote === 'up' ? -1 : 1;
+          
           return {
             ...post,
-            likes: post.isLiked ? post.likes - 1 : post.likes + 1,
-            isLiked: !post.isLiked
+            votes: post.votes + votesChange,
+            userVote: newVote
           };
         }
         return post;
@@ -134,17 +106,20 @@ export default function Feed() {
     setPosts(prevPosts => 
       prevPosts.map(post => {
         if (post.id === postId) {
-          const updatedComments = post.commentsList.map(comment => {
+          const updatedComments = post.comments.map(comment => {
             if (comment.id === commentId) {
+              const newVote = comment.userVote === 'up' ? null : 'up';
+              const votesChange = comment.userVote === 'up' ? -1 : 1;
+              
               return {
                 ...comment,
-                likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1,
-                isLiked: !comment.isLiked
+                votes: comment.votes + votesChange,
+                userVote: newVote
               };
             }
             return comment;
           });
-          return { ...post, commentsList: updatedComments };
+          return { ...post, comments: updatedComments };
         }
         return post;
       })
@@ -159,27 +134,22 @@ export default function Feed() {
       prevPosts.map(post => {
         if (post.id === postId) {
           const newCommentObj: Comment = {
-            id: post.commentsList.length + 1,
+            id: Date.now(),
             author: {
+              id: 'current-user',
               name: 'Current User',
-              avatar: '/avatars/user.jpg',
-              initials: 'CU',
+              avatar: 'CU'
             },
             content: newComment,
-            date: new Date().toLocaleDateString('en-US', { 
-              month: 'short', 
-              day: 'numeric', 
-              year: 'numeric' 
-            }),
-            likes: 0,
-            comments: 0,
-            isLiked: false,
+            timestamp: new Date().toISOString(),
+            votes: 0,
+            userVote: null,
+            isAnonymous: false
           };
           
           return {
             ...post,
-            comments: post.comments + 1,
-            commentsList: [...post.commentsList, newCommentObj]
+            comments: [...post.comments, newCommentObj]
           };
         }
         return post;
@@ -194,23 +164,18 @@ export default function Feed() {
     if (!newPostContent.trim()) return;
     
     const newPost: Post = {
-      id: posts.length + 1,
-      author: {
-        name: isAnonymous ? 'Anonymous User' : 'Current User',
-        avatar: isAnonymous ? '/avatars/anonymous.jpg' : '/avatars/user.jpg',
-        initials: isAnonymous ? 'AU' : 'CU',
+      id: Date.now(),
+      author: isAnonymous ? null : {
+        id: 'current-user',
+        name: 'Current User',
+        avatar: 'CU'
       },
-      title: newPostTitle.trim() ? newPostTitle : undefined,
       content: newPostContent,
-      date: new Date().toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric', 
-        year: 'numeric' 
-      }),
-      likes: 0,
-      comments: 0,
-      isLiked: false,
-      commentsList: []
+      timestamp: new Date().toISOString(),
+      votes: 0,
+      comments: [],
+      userVote: null,
+      isAnonymous: isAnonymous
     };
     
     setPosts([newPost, ...posts]);
@@ -218,24 +183,33 @@ export default function Feed() {
     setNewPostContent('');
   };
 
+  // Helper function to get initials from name
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(word => word[0])
+      .join('')
+      .toUpperCase();
+  };
+
   return (
     <div className="max-w-6xl mx-auto bg-white shadow rounded-lg">
       {/* Top navigation bar */}
       <div className="border-b border-gray-200 p-4 flex justify-between items-center bg-gradient-to-r from-blue-500 to-purple-600 text-white">
-      <div className="relative w-80">
-        <Search className="absolute left-3 top-2.5 text-white h-5 w-5" />
-        <Input
-        type="text"
-        placeholder="Search Flowwbook..."
-        className="pl-10 pr-4 py-2 w-full border-0 rounded-lg bg-white text-gray-700 shadow-sm focus:ring-2 focus:ring-blue-300"
-        />
-      </div>
-      <div className="flex items-center space-x-4">
-        <Button variant="ghost" size="sm" className="text-white hover:bg-white hover:text-blue-600 transition-colors">
-        Notifications
-        </Button>
-        <Settings className="text-white cursor-pointer h-6 w-6 hover:text-gray-200 transition-colors" />
-      </div>
+        <div className="relative w-80">
+          <Search className="absolute left-3 top-2.5 text-white h-5 w-5" />
+          <Input
+            type="text"
+            placeholder="Search Flowwbook..."
+            className="pl-10 pr-4 py-2 w-full border-0 rounded-lg bg-white text-gray-700 shadow-sm focus:ring-2 focus:ring-blue-300"
+          />
+        </div>
+        <div className="flex items-center space-x-4">
+          <Button variant="ghost" size="sm" className="text-white hover:bg-white hover:text-blue-600 transition-colors">
+            Notifications
+          </Button>
+          <Settings className="text-white cursor-pointer h-6 w-6 hover:text-gray-200 transition-colors" />
+        </div>
       </div>
 
       {/* Main content */}
@@ -244,116 +218,150 @@ export default function Feed() {
         <div className="col-span-2">
           <h1 className="text-2xl font-bold mb-6">Recent Posts</h1>
           
-          {posts.map((post) => (
-            <Card key={post.id} className="mb-8 shadow-sm">
-              <CardContent className="p-6">
-                {/* Post author */}
-                <div className="flex items-center mb-4">
-                  <Avatar className="h-12 w-12">
-                    <AvatarImage src={post.author.avatar} alt={post.author.name} />
-                    <AvatarFallback>{post.author.initials}</AvatarFallback>
-                  </Avatar>
-                  <div className="ml-4">
-                    <h3 className="font-medium">{post.author.name}</h3>
-                  </div>
-                </div>
-                
-                {/* Post title & content */}
-                {post.title && (
-                  <h2 className="text-xl font-bold mb-2">{post.title}</h2>
-                )}
-                <p className="text-gray-600 mb-2">{post.content}</p>
-                <p className="text-sm text-gray-400 mb-4">{post.date}</p>
-                
-                {/* Post stats */}
-                <div className="flex items-center mb-6">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={() => handleLikePost(post.id)}
-                    className={cn(
-                      "text-gray-500 flex items-center gap-1",
-                      post.isLiked && "text-blue-500 font-medium"
-                    )}
-                  >
-                    <ThumbsUp className={cn("h-4 w-4", post.isLiked && "fill-blue-500")} />
-                    <span>{post.likes}</span>
-                  </Button>
-                  <div className="flex items-center ml-4">
-                    <Button variant="ghost" size="sm" className="text-gray-500 flex items-center gap-1">
-                      <MessageSquare className="h-4 w-4" />
-                      <span>{post.comments}</span>
-                    </Button>
-                  </div>
-                </div>
-                
-                {/* Add comment section */}
-                <div className="mb-6 border rounded-lg overflow-hidden">
-                  <div className="flex p-4">
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src="/avatars/user.jpg" alt="Current user" />
-                      <AvatarFallback>CU</AvatarFallback>
+          {isLoading ? (
+            <div className="text-center py-8">
+              <p>Loading posts...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-8 text-red-500">
+              <p>{error}</p>
+              <Button 
+                onClick={() => window.location.reload()} 
+                className="mt-4 bg-blue-500 hover:bg-blue-600"
+              >
+                Retry
+              </Button>
+            </div>
+          ) : posts.length === 0 ? (
+            <div className="text-center py-8 text-gray-500">
+              <p>No posts yet. Be the first to post!</p>
+            </div>
+          ) : (
+            posts.map((post) => (
+              <Card key={post.id} className="mb-8 shadow-sm">
+                <CardContent className="p-6">
+                  {/* Post author */}
+                  <div className="flex items-center mb-4">
+                    <Avatar className="h-12 w-12">
+                      {post.isAnonymous ? (
+                        <>
+                          <AvatarFallback>AN</AvatarFallback>
+                        </>
+                      ) : (
+                        <>
+                          <AvatarFallback>{post.author?.avatar || 'UN'}</AvatarFallback>
+                        </>
+                      )}
                     </Avatar>
-                    <div className="ml-3 flex-grow">
-                      <Input
-                        type="text"
-                        placeholder="Add a comment"
-                        className="border-0 shadow-none p-2"
-                        value={newComment}
-                        onChange={(e) => setNewComment(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            addComment(post.id);
-                          }
-                        }}
-                      />
+                    <div className="ml-4">
+                      <h3 className="font-medium">
+                        {post.isAnonymous ? 'Anonymous' : post.author?.name || 'Unknown User'}
+                      </h3>
+                      <p className="text-sm text-gray-400">{formatDate(post.timestamp)}</p>
                     </div>
-                    <Button 
-                      className="bg-blue-500 hover:bg-blue-600"
-                      onClick={() => addComment(post.id)}
-                    >
-                      Post
-                    </Button>
                   </div>
-                </div>
-                
-                {/* Comments */}
-                {post.commentsList.map((comment) => (
-                  <div key={comment.id} className="bg-gray-50 p-4 rounded-lg mb-2">
-                    <div className="flex items-center mb-2">
+                  
+                  {/* Post content */}
+                  <p className="text-gray-600 mb-4">{post.content}</p>
+                  
+                  {/* Post stats */}
+                  <div className="flex items-center mb-6">
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => handleLikePost(post.id)}
+                      className={cn(
+                        "text-gray-500 flex items-center gap-1",
+                        post.userVote === 'up' && "text-blue-500 font-medium"
+                      )}
+                    >
+                      <ThumbsUp className={cn(
+                        "h-4 w-4", 
+                        post.userVote === 'up' && "fill-blue-500"
+                      )} />
+                      <span>{post.votes}</span>
+                    </Button>
+                    <div className="flex items-center ml-4">
+                      <Button variant="ghost" size="sm" className="text-gray-500 flex items-center gap-1">
+                        <MessageSquare className="h-4 w-4" />
+                        <span>{post.comments.length}</span>
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  {/* Add comment section */}
+                  <div className="mb-6 border rounded-lg overflow-hidden">
+                    <div className="flex p-4">
                       <Avatar className="h-10 w-10">
-                        <AvatarImage src={comment.author.avatar} alt={comment.author.name} />
-                        <AvatarFallback>{comment.author.initials}</AvatarFallback>
+                        <AvatarFallback>CU</AvatarFallback>
                       </Avatar>
-                      <div className="ml-3">
-                        <h4 className="font-medium">{comment.author.name}</h4>
-                        <p className="text-xs text-gray-400">{comment.date}</p>
+                      <div className="ml-3 flex-grow">
+                        <Input
+                          type="text"
+                          placeholder="Add a comment"
+                          className="border-0 shadow-none p-2"
+                          value={newComment}
+                          onChange={(e) => setNewComment(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              addComment(post.id);
+                            }
+                          }}
+                        />
+                      </div>
+                      <Button 
+                        className="bg-blue-500 hover:bg-blue-600"
+                        onClick={() => addComment(post.id)}
+                      >
+                        Post
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  {/* Comments */}
+                  {post.comments.map((comment) => (
+                    <div key={comment.id} className="bg-gray-50 p-4 rounded-lg mb-2">
+                      <div className="flex items-center mb-2">
+                        <Avatar className="h-10 w-10">
+                          {comment.isAnonymous ? (
+                            <AvatarFallback>AN</AvatarFallback>
+                          ) : (
+                            <AvatarFallback>
+                              {comment.author?.avatar || 'UN'}
+                            </AvatarFallback>
+                          )}
+                        </Avatar>
+                        <div className="ml-3">
+                          <h4 className="font-medium">
+                            {comment.isAnonymous ? 'Anonymous' : comment.author?.name || 'Unknown User'}
+                          </h4>
+                          <p className="text-xs text-gray-400">{formatDate(comment.timestamp)}</p>
+                        </div>
+                      </div>
+                      <p className="text-gray-600">{comment.content}</p>
+                      <div className="flex items-center mt-2">
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          onClick={() => handleLikeComment(post.id, comment.id)}
+                          className={cn(
+                            "text-gray-500 text-sm flex items-center gap-1",
+                            comment.userVote === 'up' && "text-blue-500 font-medium"
+                          )}
+                        >
+                          <ThumbsUp className={cn(
+                            "h-3 w-3", 
+                            comment.userVote === 'up' && "fill-blue-500"
+                          )} />
+                          <span>{comment.votes}</span>
+                        </Button>
                       </div>
                     </div>
-                    <p className="text-gray-600">{comment.content}</p>
-                    <div className="flex items-center mt-2">
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        onClick={() => handleLikeComment(post.id, comment.id)}
-                        className={cn(
-                          "text-gray-500 text-sm flex items-center gap-1",
-                          comment.isLiked && "text-blue-500 font-medium"
-                        )}
-                      >
-                        <ThumbsUp className={cn("h-3 w-3", comment.isLiked && "fill-blue-500")} />
-                        <span>{comment.likes}</span>
-                      </Button>
-                      <Button variant="ghost" size="sm" className="text-gray-500 text-sm flex items-center gap-1 ml-4">
-                        <MessageSquare className="h-3 w-3" />
-                        <span>{comment.comments}</span>
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          ))}
+                  ))}
+                </CardContent>
+              </Card>
+            ))
+          )}
         </div>
         
         {/* Right 1/3 - Sidebar */}
@@ -367,23 +375,6 @@ export default function Feed() {
                 </div>
                 <div className="bg-white text-blue-600 px-2 py-1 rounded-md text-xs">
                   Most Relevant
-                </div>
-              </div>
-              
-              {/* Collaboration image */}
-              <div className="relative bg-white rounded-lg overflow-hidden mb-4">
-                <Image 
-                  src="/api/placeholder/400/200" 
-                  alt="Collaboration" 
-                  width={400}
-                  height={200}
-                  className="w-full h-auto"
-                />
-                <div className="absolute right-8 top-1/2 -translate-y-1/2">
-                  <Avatar className="border-2 border-white">
-                    <AvatarImage src="/avatars/user.jpg" alt="User" />
-                    <AvatarFallback>U</AvatarFallback>
-                  </Avatar>
                 </div>
               </div>
               

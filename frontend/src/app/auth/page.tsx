@@ -235,7 +235,6 @@ style={{
               borderRadius: '8px',
               border: '1px solid #E2E8F0',
               backgroundColor: '#FFFFFF',
-
               boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.1)',
               cursor: 'pointer',
               fontWeight: 'bold',
@@ -244,8 +243,6 @@ style={{
               transition: 'transform 0.2s, box-shadow 0.2s',
               fontFamily: 'Inter',
               fontStyle: 'normal',
-              // fontWeight: 500,
-              // fontSize: '14px',
               marginBottom: '10px',
               lineHeight: '20px',
               }}

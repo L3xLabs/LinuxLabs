@@ -1,4 +1,4 @@
-# LinuxLabs - {Project Name}
+# LinuxLabs - FlowwBook and Flowwlitics
 
 
 

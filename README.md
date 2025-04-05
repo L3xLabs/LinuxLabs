@@ -9,3 +9,5 @@
 
 -commiting for rules
 -commitng for rules 2
+
+## Project Setup Instructions

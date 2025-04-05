@@ -6,6 +6,8 @@ import dotenv from "dotenv";
 import cors from "cors";
 import http from "http";
 import { WebSocketServer, WebSocket } from "ws";
+import fs from "fs";
+import path from "path";
 
 // Initialize crypto for Node.js environment
 const crypto = new Crypto();
@@ -139,13 +141,39 @@ app.post(
       console.log(`[Node ${node.id}] Remaining Data: ${remainingData}`);
 
       if (nextHop === "FINAL") {
-        // We're the final node - return the decrypted message
+        const message = remainingData.toString();
         console.log(`[Node ${node.id}] Final destination reached`);
-        res.json({
-          status: "delivered",
-          message: remainingData.toString(),
-        });
-        broadcastMessage(remainingData.toString());
+
+        // Get the absolute path to messages.json
+        const messagesPath = path.resolve(__dirname, "messages.json");
+
+        try {
+          let messages: string[] = [];
+
+          // If the file exists, read existing messages
+          if (fs.existsSync(messagesPath)) {
+            const raw = fs.readFileSync(messagesPath, "utf-8");
+            messages = JSON.parse(raw);
+          }
+
+          // Add the new message
+          messages.push(message);
+
+          // Save the updated array back to the file
+          fs.writeFileSync(messagesPath, JSON.stringify(messages, null, 2));
+
+          // Send response
+          res.json({
+            status: "delivered",
+            message,
+          });
+
+          broadcastMessage(message);
+        } catch (err) {
+          console.error("Failed to write message to file:", err);
+          res.status(500).json({ error: "Could not write message to file." });
+        }
+
         return;
       }
 

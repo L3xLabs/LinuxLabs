@@ -5,6 +5,7 @@
   "license": "MIT",
   "dependencies": {
     "@peculiar/webcrypto": "^1.5.0",
+    "@prisma/client": "6.5.0",
     "@types/express": "^5.0.0",
     "axios": "^1.7.9",
     "cors": "^2.8.5",
@@ -14,8 +15,9 @@
     "ws": "^8.18.0"
   },
   "devDependencies": {
-    "ts-node": "^10.9.2",
     "@types/cors": "^2.8.17",
-    "@types/ws": "^8.5.13"
+    "@types/ws": "^8.5.13",
+    "prisma": "6.5.0",
+    "ts-node": "^10.9.2"
   }
 }

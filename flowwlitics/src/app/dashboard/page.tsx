@@ -56,6 +56,7 @@ export default function DashboardPage() {
         setIsLoading(true);
         const response = await axios.get('http://localhost:3003/posts');
         console.log(response.data);
+        console.log(response.data.messages);
         const posts = response.data.messages || [];
         setPostsData(posts);
         setError(null);

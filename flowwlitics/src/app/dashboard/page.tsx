@@ -55,6 +55,7 @@ export default function DashboardPage() {
       try {
         setIsLoading(true);
         const response = await axios.get('http://localhost:3003/posts');
+        console.log(response.data);
         const posts = response.data.messages || [];
         setPostsData(posts);
         setError(null);
@@ -68,6 +69,94 @@ export default function DashboardPage() {
 
     fetchPosts();
   }, []);
+
+  // CSV Export Functions
+  const downloadCSV = (csvContent: string, fileName: string) => {
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", "data:text/csv;charset=utf-8,\uFEFF" + encodedUri);
+    link.setAttribute("download", fileName);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const exportPostsToCSV = () => {
+    // Define headers based on the post data structure
+    const headers = [
+      'ID', 
+      'Author', 
+      'Content', 
+      'Timestamp', 
+      'Is Anonymous', 
+      'Votes', 
+      'Comment Count'
+    ];
+    
+    // Convert posts data to CSV rows
+    const csvRows = postsData.map(post => [
+      post.id || '',
+      post.isAnonymous ? 'Anonymous' : (post.author?.name || 'Unknown'),
+      `"${(post.content || '').replace(/"/g, '""')}"`, // Escape quotes in content
+      post.timestamp || '',
+      post.isAnonymous ? 'Yes' : 'No',
+      post.votes || 0,
+      post.comments?.length || 0
+    ]);
+    
+    // Combine headers and rows
+    const csvArray = [headers, ...csvRows];
+    
+    // Convert to CSV string
+    const csvContent = csvArray.map(row => row.join(',')).join('\n');
+    
+    // Download the CSV
+    downloadCSV(csvContent, `posts-data-${new Date().toISOString().split('T')[0]}.csv`);
+  };
+
+  const exportChartDataToCSV = (chartData: any, fileName: string) => {
+    if (!chartData || !chartData.labels || !chartData.datasets) return;
+    
+    // Prepare headers (first column is for labels)
+    const headers = ['Category', ...chartData.datasets.map((ds: any) => ds.label || 'Value')];
+    
+    // Prepare rows
+    const rows = chartData.labels.map((label: string, index: number) => {
+      return [
+        label,
+        ...chartData.datasets.map((ds: any) => ds.data[index])
+      ];
+    });
+    
+    // Combine headers and rows
+    const csvArray = [headers, ...rows];
+    
+    // Convert to CSV string
+    const csvContent = csvArray.map(row => row.join(',')).join('\n');
+    
+    // Download the CSV
+    downloadCSV(csvContent, `${fileName}-${new Date().toISOString().split('T')[0]}.csv`);
+  };
+
+  // Function to export data based on active tab
+  const exportCurrentTabData = () => {
+    switch (activeTab) {
+      case 'overview':
+        exportChartDataToCSV(preparePostsByDateChart(), 'posts-over-time');
+        break;
+      case 'activity':
+        exportChartDataToCSV(preparePostsByHourChart(), 'posts-by-hour');
+        break;
+      case 'users':
+        exportChartDataToCSV(prepareTopUsersChart(), 'top-contributors');
+        break;
+      case 'engagement':
+        exportChartDataToCSV(prepareEngagementChart(), 'engagement-metrics');
+        break;
+      default:
+        exportPostsToCSV();
+    }
+  };
 
   // Prepare data for posts by date chart
   const preparePostsByDateChart = () => {
@@ -276,9 +365,24 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="max-h-screen bg-gray-50">
       <div className="p-6 max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold mb-6">Posts Analytics Dashboard</h1>
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">Posts Analytics Dashboard</h1>
+          
+          {/* CSV Export Button */}
+          {!isLoading && !error && postsData.length > 0 && (
+            <button
+              onClick={exportCurrentTabData}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded flex items-center"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Download CSV
+            </button>
+          )}
+        </div>
         
         {isLoading && (
           <div className="flex justify-center items-center h-64">

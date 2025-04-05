@@ -21,7 +21,13 @@ import {
 } from "lucide-react";
 
 // Custom menu item component
-const MenuItem = ({ href, icon, children }) => {
+interface MenuItemProps {
+  href: string;
+  icon?: React.ComponentType<{ className?: string }>;
+  children: React.ReactNode;
+}
+
+const MenuItem: React.FC<MenuItemProps> = ({ href, icon, children }) => {
   const Icon = icon;
   return (
     <Link href={href} className="flex items-center py-2 px-4 hover:bg-gray-100 rounded-md group">
@@ -32,7 +38,14 @@ const MenuItem = ({ href, icon, children }) => {
 };
 
 // Custom sidebar section with collapsible
-const SidebarSection = ({ title, children, defaultOpen = true }) => {
+// Define props interface for SidebarSection
+interface SidebarSectionProps {
+  title: string;
+  children: React.ReactNode;
+  defaultOpen?: boolean;
+}
+
+const SidebarSection: React.FC<SidebarSectionProps> = ({ title, children, defaultOpen = true }) => {
   return (
     <Collapsible defaultOpen={defaultOpen} className="border-b border-gray-200">
       <CollapsibleTrigger className="flex items-center justify-between w-full p-4 hover:bg-gray-50">

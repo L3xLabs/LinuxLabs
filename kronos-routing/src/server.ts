@@ -198,6 +198,35 @@ app.post(
   }
 );
 
+app.get("/posts", (_req: Request, res: Response) => {
+  const messagesPath = path.resolve(__dirname, "messages.json");
+
+  try {
+    if (fs.existsSync(messagesPath)) {
+      const data = fs.readFileSync(messagesPath, "utf-8");
+      const rawMessages = JSON.parse(data);
+
+      const messages = rawMessages
+        .map((msg: string) => {
+          try {
+            return JSON.parse(msg);
+          } catch (e) {
+            console.error("Invalid message format:", msg);
+            return null;
+          }
+        })
+        .filter((msg: any) => msg !== null);
+
+      res.json({ messages });
+    } else {
+      res.json({ messages: [] });
+    }
+  } catch (err) {
+    console.error("Failed to read messages file:", err);
+    res.status(500).json({ error: "Could not read messages file." });
+  }
+});
+
 // Start server
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {

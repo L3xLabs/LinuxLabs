@@ -31,10 +31,7 @@ export default function RootLayout({
       >
         <SidebarProvider>
           <HRSidebar />
-          <main>
-            <SidebarTrigger />
-            {children}
-          </main>
+          <main>{children}</main>
         </SidebarProvider>
       </body>
     </html>

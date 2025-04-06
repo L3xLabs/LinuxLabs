@@ -41,27 +41,19 @@ const RegisterPage: React.FC = () => {
   const handleRegister = (event: React.FormEvent): void => {
     event.preventDefault();
     if (validateForm()) {
-      const { email } = formData;
-
-      // Check for keywords in the email
-      if (email.toLowerCase().includes("hr")) {
-        window.location.href = "http://localhost:3004/dashboard";
-      } else if (email.toLowerCase().includes("user")) {
-        window.location.href = "http://localhost:3005/crm";
-      } else {
-        alert("Access denied: email must contain 'hr' or 'user'.");
-      }
+      // Route to /crm page on successful login
+      window.location.href = "/crm";
     }
   };
+
   const handleGithubSignIn = () => {
-    // Github sign-in logic here
-    console.log("Continue with Github clicked");
-    alert("Github Sign-In not implemented.");
+    // Route to /crm page on GitHub sign-in
+    window.location.href = "/crm";
   };
+  
   const handleGoogleSignIn = () => {
-    // Google sign-in logic here
-    console.log("Continue with Google clicked");
-    alert("Google Sign-In not implemented.");
+    // Route to /crm page on Google sign-in
+    window.location.href = "/crm";
   };
 
   return (
@@ -137,12 +129,10 @@ const RegisterPage: React.FC = () => {
           <h2
             style={{
               color: "#020817",
-              /* H5 */
-              // fontFamily: 'Inter',
               fontSize: "24px",
               fontStyle: "normal",
               fontWeight: 600,
-              lineHeight: "32px" /* 133.333% */,
+              lineHeight: "32px",
               letterSpacing: "-0.6px",
               marginBottom: "8px",
             }}

@@ -267,6 +267,36 @@ app.get("/posts", (_req: Request, res: Response) => {
   }
 });
 
+import { OpenAI } from 'openai';
+
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY as string
+});
+
+async function analyzeSentiment(text: string): Promise<string> {
+  const prompt = `Analyze the sentiment of the following text and respond with Positive, Negative, or Neutral:\n\n${text}`;
+
+  const response = await openai.chat.completions.create({
+    model: 'gpt-3.5-turbo',
+    messages: [{ role: 'user', content: prompt }],
+    temperature: 0
+  });
+
+  return response.choices[0].message.content?.trim() || 'Neutral';
+}
+
+
+app.get("/analyze", async (_req: Request, res: Response) => {
+  const { text } = _req.body;
+
+  const sentiment = await analyzeSentiment(text);
+  res.json({ sentiment });
+
+});
+
+
+
 // Start server
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {

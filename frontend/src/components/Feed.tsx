@@ -177,6 +177,18 @@ export default function Feed() {
       userVote: null,
       isAnonymous: isAnonymous
     };
+
+    fetch("http://localhost:3003/posts", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        content: "This is a test post from JavaScript.",
+        author: "Rakshit",
+        isAnonymous: false,
+      }),
+    })
     
     setPosts([newPost, ...posts]);
     setNewPostTitle('');

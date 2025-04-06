@@ -18,5 +18,7 @@
   "{\"id\":1743888442776,\"content\":\"Rakshit is best\",\"author\":{\"id\":\"919692244612\",\"name\":\"919692244612\",\"avatar\":\"12\"},\"isAnonymous\":false,\"timestamp\":\"2025-04-05T21:27:22.776Z\",\"votes\":0,\"comments\":[],\"userVote\":null}",
   "{\"id\":1743888506219,\"content\":\"kuyrfdjyhjkyij\",\"author\":{\"id\":\"User-360\",\"name\":\"User-360\",\"avatar\":\"US\"},\"isAnonymous\":false,\"timestamp\":\"2025-04-05T21:28:26.219Z\",\"votes\":0,\"comments\":[],\"userVote\":null}",
   "{\"id\":1743888702107,\"content\":\"Shadan is best\",\"author\":{\"id\":\"919692244612\",\"name\":\"919692244612\",\"avatar\":\"12\"},\"isAnonymous\":false,\"timestamp\":\"2025-04-05T21:31:42.107Z\",\"votes\":0,\"comments\":[],\"userVote\":null}",
-  "{\"id\":1743888827146,\"content\":\"Shadan is best\",\"author\":null,\"isAnonymous\":true,\"timestamp\":\"2025-04-05T21:33:47.146Z\",\"votes\":0,\"comments\":[],\"userVote\":null}"
+  "{\"id\":1743888827146,\"content\":\"Shadan is best\",\"author\":null,\"isAnonymous\":true,\"timestamp\":\"2025-04-05T21:33:47.146Z\",\"votes\":0,\"comments\":[],\"userVote\":null}",
+  "{\"id\":1743911938760,\"content\":\"This is a test post.\",\"author\":\"Rakshit\",\"isAnonymous\":false,\"timestamp\":\"2025-04-06T03:58:58.760Z\",\"votes\":0,\"comments\":[],\"userVote\":null}",
+  "{\"id\":1743912157287,\"content\":\"This is a test post from JavaScript.\",\"author\":\"Rakshit\",\"isAnonymous\":false,\"timestamp\":\"2025-04-06T04:02:37.287Z\",\"votes\":0,\"comments\":[],\"userVote\":null}"
 ]

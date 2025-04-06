@@ -86,9 +86,7 @@ export function broadcastMessage(message: string) {
     }
   });
 }
-app.use(
-  cors())
-;
+app.use(cors());
 // Initialize node
 const NODE_ID = process.env.NODE_ID || "node1";
 const node = new Node(NODE_ID);
@@ -267,47 +265,62 @@ app.get("/posts", (_req: Request, res: Response) => {
   }
 });
 
-import { OpenAI } from 'openai';
+app.get("/analyse", async (_req: any, res: any) => {
+  const messagesPath = path.resolve(__dirname, "messages.json");
 
+  try {
+    if (!fs.existsSync(messagesPath)) {
+      return res.json({
+        sentiment: { positive: 0, neutral: 0, negative: 0 },
+        totalPosts: 0,
+        message: "No messages found.",
+      });
+    }
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY as string
-});
+    const raw = fs.readFileSync(messagesPath, "utf-8");
+    const messages: string[] = JSON.parse(raw);
+    const input = messages.join("\n");
 
-async function analyzeSentiment(text: string): Promise<any> {
-
-  const response = await openai.chat.completions.create({
-    model: "gpt-4o",
-    messages: [
-      {
-        "role": "system",
-        "content": "You will get messages sent by employees in json format, you have to find the sentiment of everyday in rating from (0-10).\nJust give rating only."
-      },
-      {
-        "role": "user",
-        "content": text
-      }
-    ],
-    tools: [],
-    temperature: 0,
-    top_p: 1,
-    store: true
-  });
-
-  return response.choices[0].message.content; // Adjusted to access the correct property
+    const prompt = `
+You are a sentiment analysis engine. Given the following posts separated by new lines, rate their overall tone:
+- Give three ratings (out of 10): Positive, Neutral, and Negative.
+- Only respond with a JSON object in the format:
+{
+  "positive": <score>,
+  "neutral": <score>,
+  "negative": <score>
 }
 
+Posts:
+${input}
+    `.trim();
 
-app.post("/analyze", async (_req: Request, res: Response) => {
-  console.log(_req.body);
-  const { text } = _req.body;
+    const response = await axios.post(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        model: "gpt-3.5-turbo",
+        messages: [{ role: "user", content: prompt }],
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
-  const sentiment = await analyzeSentiment(text);
-  res.json({ sentiment });
+    const content = response.data.choices[0].message.content;
+    const sentiment = JSON.parse(content);
 
+    res.json({
+      sentiment,
+      totalPosts: messages.length,
+    });
+  } catch (error) {
+    console.error("Error during sentiment analysis:", error);
+    res.status(500).json({ error: "Could not analyse sentiments." });
+  }
 });
-
-
 
 // Start server
 const PORT = process.env.PORT || 3000;

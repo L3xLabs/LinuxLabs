@@ -1,12 +1,14 @@
 # 🚀 Flowwbook & Flowwlitics
 
+![Logo](./FBlogo.png)
+
 Welcome to our Hackfest 2025 project!
 
 **Flowwbook** is a next-generation closed-space community platform crafted for workplaces. It enables team communication, anonymous posting, intelligent insights, and organizational engagement in a seamless interface.
 
 **Flowwlitics** is a powerful HR analytics dashboard that draws insights from Flowwbook data, helping organizations make better people decisions using AI/ML-enhanced metrics.
 
-![Architecture Diagram](./Screenshot%202025-04-06%20at%2012.13.59%E2%80%AFPM.png)
+![Architecture Diagram](./File-structure.png)
 
 ---
 

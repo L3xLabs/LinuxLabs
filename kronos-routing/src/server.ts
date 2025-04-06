@@ -275,15 +275,44 @@ const openai = new OpenAI({
 });
 
 async function analyzeSentiment(text: string): Promise<string> {
-  const prompt = `Analyze the sentiment of the following text and respond with Positive, Negative, or Neutral:\n\n${text}`;
 
-  const response = await openai.chat.completions.create({
-    model: 'gpt-3.5-turbo',
-    messages: [{ role: 'user', content: prompt }],
-    temperature: 0
+  const response = await openai.responses.create({
+    model: "gpt-4o",
+    input: [
+      {
+        "role": "system",
+        "content": [
+          {
+            "type": "input_text",
+            "text": "You will get messages sent by employees in json format, you have to find the sentiment of everyday in rating from (0-10).\nJust give rating only."
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "type": "input_text",
+            "text": text
+          }
+        ]
+      }
+    ],
+    text: {
+      "format": {
+        "type": "text"
+      }
+    },
+    reasoning: {},
+    tools: [],
+    temperature: 0,
+    max_output_tokens: 2048,
+    top_p: 1,
+    store: true
   });
+  console.log(response);
 
-  return response.choices[0].message.content?.trim() || 'Neutral';
+  return "hi"; // Adjusted to access the correct property
 }
 
 

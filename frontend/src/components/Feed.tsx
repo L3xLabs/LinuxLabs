@@ -1,17 +1,40 @@
 "use client";
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Search, Settings, ChevronDown, MessageSquare, ThumbsUp, PlusCircle, FileText, Eye, Image as ImageIcon, Paperclip } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Switch } from '@/components/ui/switch';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { Textarea } from '@/components/ui/textarea';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { cn } from '@/lib/utils';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import {
+  Search,
+  Settings,
+  ChevronDown,
+  MessageSquare,
+  ThumbsUp,
+  PlusCircle,
+  FileText,
+  Eye,
+  Image as ImageIcon,
+  Paperclip,
+} from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
+import { Textarea } from "@/components/ui/textarea";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 interface Comment {
   id: number;
@@ -43,12 +66,12 @@ interface Post {
 }
 
 export default function Feed() {
-  const [newComment, setNewComment] = useState('');
+  const [newComment, setNewComment] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
-  const [newPostContent, setNewPostContent] = useState('');
-  const [newPostTitle, setNewPostTitle] = useState('');
-  const [postPrivacy, setPostPrivacy] = useState('Everyone');
-  const [commentPermission, setCommentPermission] = useState('Everyone');
+  const [newPostContent, setNewPostContent] = useState("");
+  const [newPostTitle, setNewPostTitle] = useState("");
+  const [postPrivacy, setPostPrivacy] = useState("Everyone");
+  const [commentPermission, setCommentPermission] = useState("Everyone");
   const [mediaDialogOpen, setMediaDialogOpen] = useState(false);
   const [pollDialogOpen, setPollDialogOpen] = useState(false);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -60,10 +83,9 @@ export default function Feed() {
     const fetchPosts = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get('http://localhost:3003/posts'); 
+        const response = await axios.get("http://localhost:3003/posts");
 
         setPosts(response.data.messages || []);
-
       } finally {
         setIsLoading(false);
       }
@@ -75,25 +97,25 @@ export default function Feed() {
   // Function to format timestamp
   const formatDate = (timestamp: string) => {
     const date = new Date(timestamp);
-    return date.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric', 
-      year: 'numeric' 
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
     });
   };
 
   // Function to handle liking a post
   const handleLikePost = (postId: number) => {
-    setPosts(prevPosts => 
-      prevPosts.map(post => {
+    setPosts((prevPosts) =>
+      prevPosts.map((post) => {
         if (post.id === postId) {
-          const newVote = post.userVote === 'up' ? null : 'up';
-          const votesChange = post.userVote === 'up' ? -1 : 1;
-          
+          const newVote = post.userVote === "up" ? null : "up";
+          const votesChange = post.userVote === "up" ? -1 : 1;
+
           return {
             ...post,
             votes: post.votes + votesChange,
-            userVote: newVote
+            userVote: newVote,
           };
         }
         return post;
@@ -103,18 +125,18 @@ export default function Feed() {
 
   // Function to handle liking a comment
   const handleLikeComment = (postId: number, commentId: number) => {
-    setPosts(prevPosts => 
-      prevPosts.map(post => {
+    setPosts((prevPosts) =>
+      prevPosts.map((post) => {
         if (post.id === postId) {
-          const updatedComments = post.comments.map(comment => {
+          const updatedComments = post.comments.map((comment) => {
             if (comment.id === commentId) {
-              const newVote = comment.userVote === 'up' ? null : 'up';
-              const votesChange = comment.userVote === 'up' ? -1 : 1;
-              
+              const newVote = comment.userVote === "up" ? null : "up";
+              const votesChange = comment.userVote === "up" ? -1 : 1;
+
               return {
                 ...comment,
                 votes: comment.votes + votesChange,
-                userVote: newVote
+                userVote: newVote,
               };
             }
             return comment;
@@ -129,66 +151,80 @@ export default function Feed() {
   // Function to add a new comment to a post
   const addComment = (postId: number) => {
     if (!newComment.trim()) return;
-    
-    setPosts(prevPosts => 
-      prevPosts.map(post => {
+
+    setPosts((prevPosts) =>
+      prevPosts.map((post) => {
         if (post.id === postId) {
           const newCommentObj: Comment = {
             id: Date.now(),
             author: {
-              id: 'current-user',
-              name: 'Current User',
-              avatar: 'CU'
+              id: "current-user",
+              name: "Current User",
+              avatar: "CU",
             },
             content: newComment,
             timestamp: new Date().toISOString(),
             votes: 0,
             userVote: null,
-            isAnonymous: false
+            isAnonymous: false,
           };
-          
+
           return {
             ...post,
-            comments: [...post.comments, newCommentObj]
+            comments: [...post.comments, newCommentObj],
           };
         }
         return post;
       })
     );
-    
-    setNewComment('');
+
+    setNewComment("");
   };
 
   // Function to create a new post
   const createNewPost = () => {
     if (!newPostContent.trim()) return;
-    
+
     const newPost: Post = {
       id: Date.now(),
-      author: isAnonymous ? null : {
-        id: 'current-user',
-        name: 'Current User',
-        avatar: 'CU'
-      },
+      author: isAnonymous
+        ? null
+        : {
+            id: "current-user",
+            name: "Current User",
+            avatar: "CU",
+          },
       content: newPostContent,
       timestamp: new Date().toISOString(),
       votes: 0,
       comments: [],
       userVote: null,
-      isAnonymous: isAnonymous
+      isAnonymous: isAnonymous,
     };
-    
+
+    fetch("http://localhost:3003/posts", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        content: "This is a test post from JavaScript.",
+        author: "Rakshit",
+        isAnonymous: false,
+      }),
+    });
+
     setPosts([newPost, ...posts]);
-    setNewPostTitle('');
-    setNewPostContent('');
+    setNewPostTitle("");
+    setNewPostContent("");
   };
 
   // Helper function to get initials from name
   const getInitials = (name: string) => {
     return name
-      .split(' ')
-      .map(word => word[0])
-      .join('')
+      .split(" ")
+      .map((word) => word[0])
+      .join("")
       .toUpperCase();
   };
 
@@ -205,7 +241,11 @@ export default function Feed() {
           />
         </div>
         <div className="flex items-center space-x-4">
-          <Button variant="ghost" size="sm" className="text-white hover:bg-white hover:text-blue-600 transition-colors">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-white hover:bg-white hover:text-blue-600 transition-colors"
+          >
             Notifications
           </Button>
           <Settings className="text-white cursor-pointer h-6 w-6 hover:text-gray-200 transition-colors" />
@@ -217,7 +257,7 @@ export default function Feed() {
         {/* Left 2/3 - Posts */}
         <div className="col-span-2">
           <h1 className="text-2xl font-bold mb-6">Recent Posts</h1>
-          
+
           {isLoading ? (
             <div className="text-center py-8">
               <p>Loading posts...</p>
@@ -225,8 +265,8 @@ export default function Feed() {
           ) : error ? (
             <div className="text-center py-8 text-red-500">
               <p>{error}</p>
-              <Button 
-                onClick={() => window.location.reload()} 
+              <Button
+                onClick={() => window.location.reload()}
                 className="mt-4 bg-blue-500 hover:bg-blue-600"
               >
                 Retry
@@ -249,46 +289,58 @@ export default function Feed() {
                         </>
                       ) : (
                         <>
-                          <AvatarFallback>{post.author?.avatar || 'UN'}</AvatarFallback>
+                          <AvatarFallback>
+                            {post.author?.avatar || "UN"}
+                          </AvatarFallback>
                         </>
                       )}
                     </Avatar>
                     <div className="ml-4">
                       <h3 className="font-medium">
-                        {post.isAnonymous ? 'Anonymous' : post.author?.name || 'Unknown User'}
+                        {post.isAnonymous
+                          ? "Anonymous"
+                          : post.author?.name || "Unknown User"}
                       </h3>
-                      <p className="text-sm text-gray-400">{formatDate(post.timestamp)}</p>
+                      <p className="text-sm text-gray-400">
+                        {formatDate(post.timestamp)}
+                      </p>
                     </div>
                   </div>
-                  
+
                   {/* Post content */}
                   <p className="text-gray-600 mb-4">{post.content}</p>
-                  
+
                   {/* Post stats */}
                   <div className="flex items-center mb-6">
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
+                    <Button
+                      variant="ghost"
+                      size="sm"
                       onClick={() => handleLikePost(post.id)}
                       className={cn(
                         "text-gray-500 flex items-center gap-1",
-                        post.userVote === 'up' && "text-blue-500 font-medium"
+                        post.userVote === "up" && "text-blue-500 font-medium"
                       )}
                     >
-                      <ThumbsUp className={cn(
-                        "h-4 w-4", 
-                        post.userVote === 'up' && "fill-blue-500"
-                      )} />
+                      <ThumbsUp
+                        className={cn(
+                          "h-4 w-4",
+                          post.userVote === "up" && "fill-blue-500"
+                        )}
+                      />
                       <span>{post.votes}</span>
                     </Button>
                     <div className="flex items-center ml-4">
-                      <Button variant="ghost" size="sm" className="text-gray-500 flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-gray-500 flex items-center gap-1"
+                      >
                         <MessageSquare className="h-4 w-4" />
                         <span>{post.comments.length}</span>
                       </Button>
                     </div>
                   </div>
-                  
+
                   {/* Add comment section */}
                   <div className="mb-6 border rounded-lg overflow-hidden">
                     <div className="flex p-4">
@@ -303,13 +355,13 @@ export default function Feed() {
                           value={newComment}
                           onChange={(e) => setNewComment(e.target.value)}
                           onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
+                            if (e.key === "Enter") {
                               addComment(post.id);
                             }
                           }}
                         />
                       </div>
-                      <Button 
+                      <Button
                         className="bg-blue-500 hover:bg-blue-600"
                         onClick={() => addComment(post.id)}
                       >
@@ -317,42 +369,52 @@ export default function Feed() {
                       </Button>
                     </div>
                   </div>
-                  
+
                   {/* Comments */}
                   {post.comments.map((comment) => (
-                    <div key={comment.id} className="bg-gray-50 p-4 rounded-lg mb-2">
+                    <div
+                      key={comment.id}
+                      className="bg-gray-50 p-4 rounded-lg mb-2"
+                    >
                       <div className="flex items-center mb-2">
                         <Avatar className="h-10 w-10">
                           {comment.isAnonymous ? (
                             <AvatarFallback>AN</AvatarFallback>
                           ) : (
                             <AvatarFallback>
-                              {comment.author?.avatar || 'UN'}
+                              {comment.author?.avatar || "UN"}
                             </AvatarFallback>
                           )}
                         </Avatar>
                         <div className="ml-3">
                           <h4 className="font-medium">
-                            {comment.isAnonymous ? 'Anonymous' : comment.author?.name || 'Unknown User'}
+                            {comment.isAnonymous
+                              ? "Anonymous"
+                              : comment.author?.name || "Unknown User"}
                           </h4>
-                          <p className="text-xs text-gray-400">{formatDate(comment.timestamp)}</p>
+                          <p className="text-xs text-gray-400">
+                            {formatDate(comment.timestamp)}
+                          </p>
                         </div>
                       </div>
                       <p className="text-gray-600">{comment.content}</p>
                       <div className="flex items-center mt-2">
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => handleLikeComment(post.id, comment.id)}
                           className={cn(
                             "text-gray-500 text-sm flex items-center gap-1",
-                            comment.userVote === 'up' && "text-blue-500 font-medium"
+                            comment.userVote === "up" &&
+                              "text-blue-500 font-medium"
                           )}
                         >
-                          <ThumbsUp className={cn(
-                            "h-3 w-3", 
-                            comment.userVote === 'up' && "fill-blue-500"
-                          )} />
+                          <ThumbsUp
+                            className={cn(
+                              "h-3 w-3",
+                              comment.userVote === "up" && "fill-blue-500"
+                            )}
+                          />
                           <span>{comment.votes}</span>
                         </Button>
                       </div>
@@ -363,7 +425,7 @@ export default function Feed() {
             ))
           )}
         </div>
-        
+
         {/* Right 1/3 - Sidebar */}
         <div className="col-span-1">
           <Card className="bg-gray-100 mb-6">
@@ -377,53 +439,58 @@ export default function Feed() {
                   Most Relevant
                 </div>
               </div>
-              
+
               {/* Create Post Area */}
               <Tabs defaultValue="text" className="w-full">
                 <TabsList className="grid w-full grid-cols-2 mb-4">
                   <TabsTrigger value="text">Text Post</TabsTrigger>
                   <TabsTrigger value="media">Media Post</TabsTrigger>
                 </TabsList>
-                
+
                 <TabsContent value="text" className="space-y-4">
-                  <Input 
-                    placeholder="Post title (optional)" 
+                  <Input
+                    placeholder="Post title (optional)"
                     value={newPostTitle}
                     onChange={(e) => setNewPostTitle(e.target.value)}
                     className="w-full"
                   />
-                  <Textarea 
-                    placeholder="What's on your mind?" 
+                  <Textarea
+                    placeholder="What's on your mind?"
                     value={newPostContent}
                     onChange={(e) => setNewPostContent(e.target.value)}
                     className="min-h-32"
                   />
                 </TabsContent>
-                
+
                 <TabsContent value="media" className="space-y-4">
                   <div className="bg-white rounded-lg border-2 border-dashed border-gray-300 p-8 text-center cursor-pointer hover:border-blue-500 transition-colors">
                     <ImageIcon className="h-8 w-8 mx-auto text-gray-400 mb-2" />
-                    <p className="text-gray-500">Drop files here or click to upload</p>
+                    <p className="text-gray-500">
+                      Drop files here or click to upload
+                    </p>
                   </div>
-                  <Textarea 
-                    placeholder="Add a caption..." 
+                  <Textarea
+                    placeholder="Add a caption..."
                     className="min-h-16"
                   />
                 </TabsContent>
               </Tabs>
-              
+
               {/* Anonymous toggle */}
               <div className="flex items-center justify-between my-4">
                 <p className="text-gray-600">Anonymous Post</p>
-                <Switch 
+                <Switch
                   checked={isAnonymous}
                   onCheckedChange={setIsAnonymous}
                 />
               </div>
-              
+
               {/* Add media and create poll */}
               <div className="flex items-center text-blue-500 mb-4">
-                <Dialog open={mediaDialogOpen} onOpenChange={setMediaDialogOpen}>
+                <Dialog
+                  open={mediaDialogOpen}
+                  onOpenChange={setMediaDialogOpen}
+                >
                   <DialogTrigger asChild>
                     <Button variant="ghost" size="sm" className="mr-4 px-0">
                       <PlusCircle className="h-4 w-4 mr-1" />
@@ -442,9 +509,15 @@ export default function Feed() {
                       <div className="bg-gray-50 rounded-lg border-2 border-dashed p-8 text-center">
                         <div className="flex flex-col items-center">
                           <Paperclip className="h-10 w-10 text-gray-400 mb-2" />
-                          <p className="text-gray-500 mb-2">Drag and drop files here</p>
+                          <p className="text-gray-500 mb-2">
+                            Drag and drop files here
+                          </p>
                           <p className="text-gray-400 text-sm">or</p>
-                          <Button variant="secondary" size="sm" className="mt-2">
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            className="mt-2"
+                          >
                             Browse Files
                           </Button>
                         </div>
@@ -452,7 +525,7 @@ export default function Feed() {
                     </div>
                   </DialogContent>
                 </Dialog>
-                
+
                 <Dialog open={pollDialogOpen} onOpenChange={setPollDialogOpen}>
                   <DialogTrigger asChild>
                     <Button variant="ghost" size="sm" className="px-0">
@@ -474,9 +547,11 @@ export default function Feed() {
                       <Input placeholder="Option 2" />
                       <Input placeholder="Option 3 (optional)" />
                       <Input placeholder="Option 4 (optional)" />
-                      
+
                       <div className="flex items-center justify-between mt-2">
-                        <span className="text-sm text-gray-500">Poll duration</span>
+                        <span className="text-sm text-gray-500">
+                          Poll duration
+                        </span>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="outline" size="sm">
@@ -496,41 +571,67 @@ export default function Feed() {
                   </DialogContent>
                 </Dialog>
               </div>
-              
+
               {/* Privacy settings */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="w-full justify-start text-gray-600 mb-4 px-0">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start text-gray-600 mb-4 px-0"
+                  >
                     <Eye className="h-4 w-4 mr-1" />
                     Who can see my post?
                     <ChevronDown className="h-4 w-4 ml-1" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => setPostPrivacy('Everyone')}>Everyone</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setPostPrivacy('Friends')}>Friends</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setPostPrivacy('Only Me')}>Only Me</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setPostPrivacy("Everyone")}>
+                    Everyone
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setPostPrivacy("Friends")}>
+                    Friends
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setPostPrivacy("Only Me")}>
+                    Only Me
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              
+
               {/* Comment settings */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="w-full justify-start text-gray-600 mb-4 px-0">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="w-full justify-start text-gray-600 mb-4 px-0"
+                  >
                     <MessageSquare className="h-4 w-4 mr-1" />
                     Who can comment on my post?
                     <ChevronDown className="h-4 w-4 ml-1" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => setCommentPermission('Everyone')}>Everyone</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setCommentPermission('Friends')}>Friends</DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setCommentPermission('No One')}>No One</DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setCommentPermission("Everyone")}
+                  >
+                    Everyone
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setCommentPermission("Friends")}
+                  >
+                    Friends
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setCommentPermission("No One")}
+                  >
+                    No One
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
-              
+
               {/* Post button */}
-              <Button 
+              <Button
                 className="w-full bg-blue-500 hover:bg-blue-600 mt-2"
                 onClick={createNewPost}
                 disabled={!newPostContent.trim()}

@@ -97,6 +97,14 @@ export default function HRSidebar() {
           </MenuItem>
         </SidebarSection>
 
+        <SidebarSection title="FlowwLitics">
+          <MenuItem href="/create-task" icon={Eye}>Check Status</MenuItem>
+        </SidebarSection>
+
+        <SidebarSection title="Floww Book">
+          <MenuItem href="/create-task" icon={Eye}>Stauts Update</MenuItem>
+        </SidebarSection>
+
         <SidebarSection title="Task">
           <MenuItem href="/create-task" icon={Plus}>
             Create Task

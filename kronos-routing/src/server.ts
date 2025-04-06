@@ -267,6 +267,48 @@ app.get("/posts", (_req: Request, res: Response) => {
   }
 });
 
+import { OpenAI } from 'openai';
+
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY as string
+});
+
+async function analyzeSentiment(text: string): Promise<any> {
+
+  const response = await openai.chat.completions.create({
+    model: "gpt-4o",
+    messages: [
+      {
+        "role": "system",
+        "content": "You will get messages sent by employees in json format, you have to find the sentiment of everyday in rating from (0-10).\nJust give rating only."
+      },
+      {
+        "role": "user",
+        "content": text
+      }
+    ],
+    tools: [],
+    temperature: 0,
+    top_p: 1,
+    store: true
+  });
+
+  return response.choices[0].message.content; // Adjusted to access the correct property
+}
+
+
+app.post("/analyze", async (_req: Request, res: Response) => {
+  console.log(_req.body);
+  const { text } = _req.body;
+
+  const sentiment = await analyzeSentiment(text);
+  res.json({ sentiment });
+
+});
+
+
+
 // Start server
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {

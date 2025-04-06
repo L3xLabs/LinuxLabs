@@ -83,7 +83,7 @@ export default function HRSidebar() {
             <div className="h-10 w-10 bg-blue-600 rounded-sm flex items-center justify-center">
               <span className="text-white text-lg">A</span>
             </div>
-            <span className="font-bold text-lg">Atom HR</span>
+            <span className="font-bold text-lg">Atom Employee</span>
           </div>
           <ChevronDown className="h-5 w-5 text-gray-500" />
         </div>
@@ -94,6 +94,18 @@ export default function HRSidebar() {
         <SidebarSection title="Home">
           <MenuItem href="/" icon={Home}>
             Home
+          </MenuItem>
+        </SidebarSection>
+
+        <SidebarSection title="FlowwLitics">
+          <MenuItem href="/create-task" icon={Eye}>
+            Check Status
+          </MenuItem>
+        </SidebarSection>
+
+        <SidebarSection title="Floww Book">
+          <MenuItem href="/create-task" icon={Eye}>
+            Stauts Update
           </MenuItem>
         </SidebarSection>
 

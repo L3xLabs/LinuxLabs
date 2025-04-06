@@ -1,9 +1,16 @@
-const { OpenAI } = require('openai');
+import express from 'express';
+import { OpenAI } from 'openai';
+import dotenv from 'dotenv';
 
-require('dotenv').config(); // Load .env variables
+dotenv.config();
+
+const app = express();
+const port = 3000;
+
+app.use(express.json());
 
 const openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY // replace with your OpenAI API key
+  apiKey: process.env.OPENAI_API_KEY
 });
 
 async function analyzeSentiment(text) {
@@ -15,13 +22,25 @@ async function analyzeSentiment(text) {
     temperature: 0
   });
 
-  const sentiment = response.choices[0].message.content.trim();
-  return sentiment;
+  return response.choices[0].message.content.trim();
 }
 
-// Example usage
-(async () => {
-  const sentiment = await analyzeSentiment("I really enjoyed the new season of the show!");
-  console.log("Sentiment:", sentiment);
-})();
+app.post('/analyze', async (req, res) => {
+  const { text } = req.body;
 
+  if (!text) {
+    return res.status(400).json({ error: 'Text is required' });
+  }
+
+  try {
+    const sentiment = await analyzeSentiment(text);
+    res.json({ sentiment });
+  } catch (error) {
+    console.error('Error analyzing sentiment:', error.message);
+    res.status(500).json({ error: 'Failed to analyze sentiment' });
+  }
+});
+
+app.listen(port, () => {
+  console.log(`Sentiment API listening at http://localhost:${port}`);
+});

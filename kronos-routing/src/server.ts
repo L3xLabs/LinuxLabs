@@ -274,49 +274,32 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY as string
 });
 
-async function analyzeSentiment(text: string): Promise<string> {
+async function analyzeSentiment(text: string): Promise<any> {
 
-  const response = await openai.responses.create({
+  const response = await openai.chat.completions.create({
     model: "gpt-4o",
-    input: [
+    messages: [
       {
         "role": "system",
-        "content": [
-          {
-            "type": "input_text",
-            "text": "You will get messages sent by employees in json format, you have to find the sentiment of everyday in rating from (0-10).\nJust give rating only."
-          }
-        ]
+        "content": "You will get messages sent by employees in json format, you have to find the sentiment of everyday in rating from (0-10).\nJust give rating only."
       },
       {
         "role": "user",
-        "content": [
-          {
-            "type": "input_text",
-            "text": text
-          }
-        ]
+        "content": text
       }
     ],
-    text: {
-      "format": {
-        "type": "text"
-      }
-    },
-    reasoning: {},
     tools: [],
     temperature: 0,
-    max_output_tokens: 2048,
     top_p: 1,
     store: true
   });
-  console.log(response);
 
-  return "hi"; // Adjusted to access the correct property
+  return response.choices[0].message.content; // Adjusted to access the correct property
 }
 
 
-app.get("/analyze", async (_req: Request, res: Response) => {
+app.post("/analyze", async (_req: Request, res: Response) => {
+  console.log(_req.body);
   const { text } = _req.body;
 
   const sentiment = await analyzeSentiment(text);
